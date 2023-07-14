@@ -15,7 +15,7 @@ void swap(int *a, int *b)
 }
 void heapify(int arr[], int n, int i)
 {
-	int largest = 1;
+	int largest = i;
 	int left = 2 * i + 1;
 	int right = 2 * i + 2;
 
@@ -27,7 +27,7 @@ void heapify(int arr[], int n, int i)
 	{
 		largest = right;
 	}
-	if (largest != 1)
+	if (largest != i)
 	{
 		swap(&arr[i], &arr[largest]);
 		heapify(arr, n, largest);
@@ -37,6 +37,10 @@ void heapify(int arr[], int n, int i)
 void heapSort(int arr[], int n)
 {
 	for (int i = n / 2 - 1; i >= 0; i--)
+	{
+		heapify(arr, n, i);
+	}
+	for (int i = n - 1; i > 0; i--)
 	{
 		swap(&arr[0], &arr[i]);
 		heapify(arr, i, 0);
@@ -48,8 +52,8 @@ void merge(int pData[], int l, int mid, int r)
 {
 	int n1 = mid - l + 1;
 	int n2 = r - mid;
-	int left[n1];
-	int right[n2];
+	int *left = (int *)malloc(n1 * sizeof(int));  // Allocate memory for left subarray
+	int *right = (int *)malloc(n2 * sizeof(int)); // Allocate memory for right subarray
 
 	for (int i = 0; i < n1; i++)
 	{
@@ -86,6 +90,11 @@ void merge(int pData[], int l, int mid, int r)
 		j++;
 		k++;
 	}
+	free(left);
+	free(right);
+
+	// Update the memory allocation count
+	extraMemoryAllocated += (n1 * sizeof(int)) + (n2 * sizeof(int));
 }
 
 // extraMemoryAllocated counts bytes of extra memory allocated
@@ -111,17 +120,20 @@ int parseData(char *inputFileName, int **ppData)
 
 	if (inFile)
 	{
-		fscanf(inFile, "%d\n", &dataSz);
-		*ppData = (int *)malloc(sizeof(int) * dataSz);
-		// Implement parse data block
-		if (*ppData == NULL)
+		// Count the number of integers in the file
+		while (fscanf(inFile, "%d", &n) == 1)
 		{
-			printf("Cannot allocate memory\n");
-			exit(-1);
+			dataSz++;
 		}
+
+		// Allocate memory for the data array
+		*ppData = (int *)malloc(sizeof(int) * dataSz);
+
+		// Read the data from the file
+		rewind(inFile);
 		for (i = 0; i < dataSz; ++i)
 		{
-			fscanf(inFile, "%d ", &n);
+			fscanf(inFile, "%d", &n);
 			data = *ppData + i;
 			*data = n;
 		}
